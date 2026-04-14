@@ -1,0 +1,34 @@
+{
+  "name": "slop-shall-not-pass",
+  "version": "0.1.0",
+  "description": "A GitHub Actions quality gate that scores pull requests before they reach reviewers.",
+  "main": ".github/scripts/pr-scorer.js",
+  "scripts": {
+    "test": "node test/run-local.js",
+    "test:fixture": "node test/run-local.js --fixture"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LlamaopNV/slop-shall-not-pass.git"
+  },
+  "keywords": [
+    "github-actions",
+    "pull-request",
+    "code-review",
+    "ai-slop",
+    "quality-gate",
+    "claude"
+  ],
+  "author": "LlamaopNV",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LlamaopNV/slop-shall-not-pass/issues"
+  },
+  "homepage": "https://github.com/LlamaopNV/slop-shall-not-pass#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@octokit/rest": "^21.0.0"
+  }
+}
