@@ -1,6 +1,6 @@
 # slop-shall-not-pass
 
-![You shall not pass](./docs/gandalf.gif)
+![You shall not pass](./docs/lord-of-the-rings-you-shall-not-pass.gif)
 
 A GitHub Actions quality gate that scores pull requests before they reach your reviewers. Blocks the obvious AI-generated filler so humans can focus on PRs that are actually worth reading.
 
