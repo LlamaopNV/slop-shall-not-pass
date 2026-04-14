@@ -96,10 +96,6 @@ PRs welcome. They will be scored by the gate they are contributing to, which is 
 
 If you open a PR, describe what changed and why. If it is a bug fix, include how to reproduce the bug. Write commit messages someone could actually read.
 
-## Acknowledgments
-
-Inspired by the curl project and Linux kernel maintainers' public writing about the AI slop problem, and by the broader conversation around AI-driven vulnerability research in *The AI Vulnerability Storm: Building a Mythos-ready Security Program* from the CSA CISO Community, SANS, and OWASP GenAI Security Project.
-
 ## License
 
 MIT. See [LICENSE](LICENSE).
