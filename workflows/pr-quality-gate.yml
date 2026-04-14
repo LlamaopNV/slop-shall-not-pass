@@ -1,0 +1,91 @@
+name: PR Quality Gate
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  pull-requests: write
+  statuses: write
+  issues: write
+
+jobs:
+  score-pr:
+    # Skip if this is a human reviewer applying a label via review — that's handled by the label job
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @octokit/rest node-fetch
+
+      - name: Score PR
+        id: score
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node .github/scripts/pr-scorer.js
+
+      - name: Set commit status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const score = parseInt(process.env.SCORE);
+            const summary = process.env.SUMMARY;
+
+            let state, description;
+            if (score < 40) {
+              state = 'failure';
+              description = `Quality score: ${score}/100 — blocked. See PR comment for details.`;
+            } else if (score < 70) {
+              state = 'pending';
+              description = `Quality score: ${score}/100 — human review needed.`;
+            } else {
+              state = 'success';
+              description = `Quality score: ${score}/100 — cleared for review.`;
+            }
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.HEAD_SHA,
+              state,
+              description,
+              context: 'PR Quality Gate',
+            });
+        env:
+          SCORE: ${{ steps.score.outputs.score }}
+          SUMMARY: ${{ steps.score.outputs.summary }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+  # When a reviewer applies ai-slop or ai-assisted-valid label, record it
+  record-feedback:
+    if: >
+      github.event_name == 'pull_request' &&
+      (contains(github.event.label.name, 'ai-slop') ||
+       contains(github.event.label.name, 'ai-assisted-valid'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log feedback for tuning
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // In a real setup you'd write this to a DB or dataset file.
+            // Here we just log it — extend to POST to your analytics endpoint.
+            const label = context.payload.label.name;
+            const pr = context.payload.pull_request.number;
+            console.log(`Feedback recorded: PR #${pr} labelled as "${label}"`);
+            console.log('Use this signal to tune score thresholds over time.');
